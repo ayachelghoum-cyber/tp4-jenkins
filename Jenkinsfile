@@ -1,34 +1,41 @@
+def gscript
+
 pipeline {
     agent any
 
-    tools {
-        maven 'Maven'
-    }
-
     parameters {
         string(name: 'VERSION', defaultValue: '1.0.0', description: 'Version à déployer')
-        choice(name: 'ENV', choices: ['dev', 'staging', 'prod'], description: 'Environnement')
-        booleanParam(name: 'executeTests', defaultValue: true, description: 'Lancer les tests ?')
+        choice(name: 'ENV', choices: ['staging', 'production'], description: 'Environnement')
     }
 
     stages {
-        stage("Build") {
+        stage('Load Script') {
             steps {
-                echo "Building the application..."
-                sh 'mvn --version'
+                // Chargement du fichier Groovy externe
+                script {
+                    gscript = load 'script.groovy'
+                }
             }
         }
-        stage("Test") {
-            when {
-                expression { params.executeTests == true }
-            }
+        stage('Build') {
             steps {
-                echo "Testing the application..."
+                script {
+                    gscript.buildApp()
+                }
             }
         }
-        stage("Deploy") {
+        stage('Test') {
             steps {
-                echo "Deploying version ${params.VERSION} sur ${params.ENV}"
+                script {
+                    gscript.testApp()
+                }
+            }
+        }
+        stage('Deploy') {
+            steps {
+                script {
+                    gscript.deployApp(params.VERSION, params.ENV)
+                }
             }
         }
     }
