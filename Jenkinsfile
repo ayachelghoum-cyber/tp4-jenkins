@@ -1,33 +1,35 @@
 pipeline {
     agent any
-    environment {
-    NEW_VERSION = '1.3.0'
-    SERVER_CREDENTIALS = credentials('server-credentials')
-}
+
     tools {
         maven 'Maven'
     }
 
+    parameters {
+        string(name: 'VERSION', defaultValue: '1.0.0', description: 'Version à déployer')
+        choice(name: 'ENV', choices: ['dev', 'staging', 'prod'], description: 'Environnement')
+        booleanParam(name: 'executeTests', defaultValue: true, description: 'Lancer les tests ?')
+    }
+
     stages {
-        stage('Build') {
+        stage("Build") {
             steps {
-                echo 'Building the application...'
-                 sh 'mvn --version'
-                
+                echo "Building the application..."
+                sh 'mvn --version'
             }
         }
-        stage('Test') {
-        
+        stage("Test") {
+            when {
+                expression { params.executeTests == true }
+            }
             steps {
-                echo 'Testing the application...'
+                echo "Testing the application..."
             }
         }
-        stage('Deploy') {
+        stage("Deploy") {
             steps {
-                echo 'Deploying application...'
-                echo "user = ${SERVER_CREDENTIALS_USR}"
+                echo "Deploying version ${params.VERSION} sur ${params.ENV}"
             }
         }
     }
-    
 }
