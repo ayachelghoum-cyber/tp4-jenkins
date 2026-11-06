@@ -1,15 +1,14 @@
 pipeline {
     agent any
-    environment {
-        NEW_VERSION = '1.3.0'
-        SERVER_CREDENTIALS = credentials('server-credentials')
+    tools {
+        maven 'Maven'
     }
 
     stages {
         stage('Build') {
             steps {
                 echo 'Building the application...'
-                echo "building version ${NEW_VERSION}"
+                 sh 'mvn --version'
                 
             }
         }
